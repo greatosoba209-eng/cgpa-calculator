@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nigerian CGPA Calculator (5.0 and 4.0 scale)</title>
+<meta name="description" content="Free CGPA calculator for Nigerian universities and polytechnics. Calculate your semester GPA, CGPA and degree class.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#0A5C36;
+    --green-deep:#073D24;
+    --paper:#F6F7F2;
+    --ink:#15231B;
+    --muted:#5B6B61;
+    --line:#D5DBD2;
+    --gold:#E3A72F;
+    --white:#FFFFFF;
+    --bad:#B3341F;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px}
+  h1{
+    font-family:"Bricolage Grotesque","DM Sans",system-ui,sans-serif;
+    font-weight:800;font-size:clamp(2rem,6vw,2.9rem);line-height:1.05;
+    margin:8px 0 10px;color:var(--green-deep);letter-spacing:-0.02em;
+  }
+  .lead{color:var(--muted);margin:0 0 24px;max-width:56ch}
+  h2{
+    font-family:"Bricolage Grotesque","DM Sans",sans-serif;font-weight:600;
+    font-size:1.15rem;margin:0 0 10px;
+  }
+  section{
+    background:var(--white);border:1px solid var(--line);border-radius:10px;
+    padding:18px;margin-bottom:16px;
+  }
+  .scale{display:inline-flex;border:1.5px solid var(--green);border-radius:8px;overflow:hidden}
+  .scale button{
+    border:0;background:transparent;color:var(--green);font:inherit;font-weight:700;
+    padding:10px 18px;cursor:pointer;min-height:44px;
+  }
+  .scale button[aria-pressed="true"]{background:var(--green);color:var(--white)}
+  .hint{font-size:.875rem;color:var(--muted);margin:8px 0 0}
+  label{font-size:.875rem;font-weight:500;color:var(--muted);display:block;margin-bottom:4px}
+  input,select{
+    font:inherit;color:var(--ink);background:var(--white);
+    border:1.5px solid var(--line);border-radius:8px;padding:10px;width:100%;min-height:44px;
+  }
+  input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--green)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row{
+    display:grid;grid-template-columns:1fr 78px 92px 40px;gap:8px;margin-bottom:8px;align-items:center;
+  }
+  .row.head{font-size:.8rem;color:var(--muted);font-weight:500;margin-bottom:4px}
+  .del{
+    border:0;background:transparent;color:var(--muted);font-size:1.4rem;cursor:pointer;
+    min-height:44px;border-radius:8px;
+  }
+  .del:hover{color:var(--bad);background:#F5E6E2}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .btn{
+    font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;min-height:44px;cursor:pointer;
+    border:1.5px solid var(--green);background:var(--white);color:var(--green);
+  }
+  .btn.solid{background:var(--green);color:var(--white)}
+  .btn:hover{filter:brightness(.95)}
+  .result{background:var(--green-deep);color:var(--white);border:0}
+  .result h2{color:#BFE3CF}
+  .big{
+    font-family:"Bricolage Grotesque","DM Sans",sans-serif;font-weight:800;
+    font-size:clamp(3.2rem,16vw,5.5rem);line-height:1;letter-spacing:-0.03em;margin:4px 0 6px;
+  }
+  .class{
+    display:inline-block;background:var(--gold);color:var(--green-deep);font-weight:700;
+    padding:4px 12px;border-radius:6px;margin-bottom:14px;
+  }
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid #1F6B47;padding-top:12px}
+  .stats div span{display:block;font-size:.8rem;color:#BFE3CF}
+  .stats div strong{font-size:1.4rem}
+  .warn{color:#FFD9D1;font-size:.875rem;margin:10px 0 0}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+  footer{font-size:.85rem;color:var(--muted);margin-top:24px}
+  @media (max-width:480px){
+    .row{grid-template-columns:1fr 64px 80px 36px;gap:6px}
+    .two{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Nigerian CGPA calculator</h1>
+  <p class="lead">Enter your courses, credit units and grades. Get your semester GPA, your CGPA and your degree class instantly.</p>
+
+  <section>
+    <h2>Grading scale</h2>
+    <div class="scale" role="group" aria-label="Grading scale">
+      <button type="button" id="s5" aria-pressed="true">5.0 scale (universities)</button>
+      <button type="button" id="s4" aria-pressed="false">4.0 scale</button>
+    </div>
+    <p class="hint" id="scaleHint"></p>
+  </section>
+
+  <section>
+    <h2>Previous results (optional)</h2>
+    <div class="two">
+      <div>
+        <label for="prevCgpa">CGPA so far</label>
+        <input id="prevCgpa" type="number" inputmode="decimal" min="0" step="0.01" placeholder="e.g. 3.85">
+      </div>
+      <div>
+        <label for="prevUnits">Total units so far</label>
+        <input id="prevUnits" type="number" inputmode="numeric" min="0" step="1" placeholder="e.g. 72">
+      </div>
+    </div>
+    <p class="hint">Leave empty if this is your first semester.</p>
+  </section>
+
+  <section>
+    <h2>This semester's courses</h2>
+    <div class="row head" aria-hidden="true"><span>Course (optional)</span><span>Units</span><span>Grade</span><span></span></div>
+    <div id="rows"></div>
+    <div class="actions">
+      <button type="button" class="btn solid" id="add">Add course</button>
+      <button type="button" class="btn" id="clear">Clear all</button>
+    </div>
+  </section>
+
+  <section class="result" aria-live="polite">
+    <h2>Your result</h2>
+    <div class="big" id="mainNum">0.00</div>
+    <div class="class" id="degClass">Add courses to begin</div>
+    <div class="stats">
+      <div><span>Semester GPA</span><strong id="gpa">0.00</strong></div>
+      <div><span>Units this semester</span><strong id="units">0</strong></div>
+    </div>
+    <p class="warn" id="warn" hidden></p>
+  </section>
+
+  <section>
+    <h2>Degree classes</h2>
+    <table id="classTable"></table>
+  </section>
+
+  <footer>
+    Grade points and class boundaries are the common Nigerian standards. Some schools use slightly different rules, so confirm with your department.
+  </footer>
+</div>
+
+<script>
+const SCALES = {
+  5: {
+    grades: {A:5, B:4, C:3, D:2, E:1, F:0},
+    hint: "A = 5, B = 4, C = 3, D = 2, E = 1, F = 0",
+    classes: [
+      {min:4.5, name:"First Class", range:"4.50 – 5.00"},
+      {min:3.5, name:"Second Class Upper", range:"3.50 – 4.49"},
+      {min:2.4, name:"Second Class Lower", range:"2.40 – 3.49"},
+      {min:1.5, name:"Third Class", range:"1.50 – 2.39"},
+      {min:1.0, name:"Pass", range:"1.00 – 1.49"},
+      {min:0,   name:"Below pass", range:"Below 1.00"}
+    ]
+  },
+  4: {
+    grades: {A:4, B:3, C:2, D:1, F:0},
+    hint: "A = 4, B = 3, C = 2, D = 1, F = 0",
+    classes: [
+      {min:3.5, name:"Distinction", range:"3.50 – 4.00"},
+      {min:3.0, name:"Upper Credit", range:"3.00 – 3.49"},
+      {min:2.5, name:"Lower Credit", range:"2.50 – 2.99"},
+      {min:2.0, name:"Pass", range:"2.00 – 2.49"},
+      {min:0,   name:"Below pass", range:"Below 2.00"}
+    ]
+  }
+};
+
+let scale = 5;
+const rowsEl = document.getElementById("rows");
+
+function gradeOptions(selected){
+  let html = '<option value="">Grade</option>';
+  for (const g of Object.keys(SCALES[scale].grades)) {
+    html += `<option value="${g}" ${g===selected?"selected":""}>${g} (${SCALES[scale].grades[g]})</option>`;
+  }
+  return html;
+}
+
+function addRow(name="", units="", grade=""){
+  const div = document.createElement("div");
+  div.className = "row";
+  div.innerHTML = `
+    <input type="text" class="name" placeholder="e.g. MTH 101" aria-label="Course name" value="${name}">
+    <input type="number" class="u" inputmode="numeric" min="0" max="12" step="1" placeholder="3" aria-label="Credit units" value="${units}">
+    <select class="g" aria-label="Grade">${gradeOptions(grade)}</select>
+    <button type="button" class="del" aria-label="Remove course">&times;</button>`;
+  div.querySelector(".del").addEventListener("click", () => { div.remove(); calc(); });
+  div.addEventListener("input", calc);
+  div.addEventListener("change", calc);
+  rowsEl.appendChild(div);
+}
+
+function setScale(s){
+  scale = s;
+  document.getElementById("s5").setAttribute("aria-pressed", s===5);
+  document.getElementById("s4").setAttribute("aria-pressed", s===4);
+  document.getElementById("scaleHint").textContent = SCALES[s].hint;
+  rowsEl.querySelectorAll(".row").forEach(r => {
+    const sel = r.querySelector(".g");
+    const keep = SCALES[s].grades[sel.value] !== undefined ? sel.value : "";
+    sel.innerHTML = gradeOptions(keep);
+  });
+  renderClassTable();
+  calc();
+}
+
+function classFor(cgpa){
+  return SCALES[scale].classes.find(c => cgpa >= c.min);
+}
+
+function renderClassTable(){
+  document.getElementById("classTable").innerHTML = SCALES[scale].classes
+    .map(c => `<tr><td>${c.name}</td><td>${c.range}</td></tr>`).join("");
+}
+
+function calc(){
+  const max = scale;
+  let pts = 0, units = 0;
+  rowsEl.querySelectorAll(".row").forEach(r => {
+    const u = parseFloat(r.querySelector(".u").value);
+    const g = r.querySelector(".g").value;
+    if (u > 0 && g) {
+      pts += u * SCALES[scale].grades[g];
+      units += u;
+    }
+  });
+  const gpa = units ? pts / units : 0;
+
+  const pc = parseFloat(document.getElementById("prevCgpa").value);
+  const pu = parseFloat(document.getElementById("prevUnits").value);
+  const hasPrev = pc >= 0 && pu > 0;
+  const totalUnits = units + (hasPrev ? pu : 0);
+  const totalPts = pts + (hasPrev ? pc * pu : 0);
+  const cgpa = totalUnits ? totalPts / totalUnits : 0;
+
+  const warn = document.getElementById("warn");
+  if (hasPrev && pc > max) {
+    warn.hidden = false;
+    warn.textContent = "Your previous CGPA is higher than " + max.toFixed(1) + ". Check the grading scale you selected.";
+  } else {
+    warn.hidden = true;
+  }
+
+  document.getElementById("gpa").textContent = gpa.toFixed(2);
+  document.getElementById("units").textContent = units;
+  document.getElementById("mainNum").textContent = cgpa.toFixed(2);
+  document.getElementById("degClass").textContent =
+    totalUnits ? classFor(cgpa).name + (hasPrev ? " (CGPA)" : "") : "Add courses to begin";
+}
+
+document.getElementById("s5").addEventListener("click", () => setScale(5));
+document.getElementById("s4").addEventListener("click", () => setScale(4));
+document.getElementById("add").addEventListener("click", () => addRow());
+document.getElementById("clear").addEventListener("click", () => {
+  rowsEl.innerHTML = "";
+  for (let i = 0; i < 6; i++) addRow();
+  document.getElementById("prevCgpa").value = "";
+  document.getElementById("prevUnits").value = "";
+  calc();
+});
+document.getElementById("prevCgpa").addEventListener("input", calc);
+document.getElementById("prevUnits").addEventListener("input", calc);
+
+for (let i = 0; i < 6; i++) addRow();
+setScale(5);
+</script>
+</body>
+</html>
